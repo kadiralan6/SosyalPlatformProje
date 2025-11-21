@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SABİS Platform{% endblock %}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="{{ url_for('index') }}" class="navbar-brand">SABİS</a>
+
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('index') }}" class="nav-link">Ana Sayfa</a></li>
+                <li><a href="{{ url_for('people') }}" class="nav-link">Kişiler</a></li>
+                <li><a href="{{ url_for('photos') }}" class="nav-link">Fotoğraflar</a></li>
+                <li><a href="{{ url_for('videos') }}" class="nav-link">Videolar</a></li>
+                <li><a href="{{ url_for('forum') }}" class="nav-link">Forum</a></li>
+                <li><a href="{{ url_for('messages') }}" class="nav-link">Mesajlar</a></li>
+                <li><a href="{{ url_for('activity') }}" class="nav-link">Aktivite</a></li>
+                <li><a href="{{ url_for('map_view') }}" class="nav-link">Harita</a></li>
+                <li><a href="{{ url_for('profile', user_id=current_user.id) }}" class="nav-link">Profilim</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-link">Çıkış</a></li>
+                {% else %}
+                <li><a href="{{ url_for('index') }}" class="nav-link">Ana Sayfa</a></li>
+                <li><a href="{{ url_for('login') }}" class="nav-link">Giriş</a></li>
+                <li><a href="{{ url_for('register') }}" class="nav-link btn-primary">Kayıt Ol</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} fade-in">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-4 mb-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center p-4 mt-4"
+        style="background: rgba(30, 41, 59, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <div class="container">
+            <p class="text-muted">&copy; 2025 SABİS Platform - Sosyal Ağ Bilgi Sistemi</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

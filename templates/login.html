@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title text-center">Giriş Yap</h2>
+      <p class="text-center text-muted">Hesabınıza giriş yapın</p>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.username.label(class="form-label") }}
+          {{ form.username(class="form-control") }}
+          {% if form.username.errors %}
+          <span class="text-danger">{{ form.username.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control") }}
+          {% if form.password.errors %}
+          <span class="text-danger">{{ form.password.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-option">
+            {{ form.remember_me() }}
+            {{ form.remember_me.label.text }}
+          </label>
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+        </div>
+      </form>
+
+      <p class="text-center mt-3 text-muted">
+        Hesabınız yok mu? <a href="{{ url_for('register') }}">Kayıt olun</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

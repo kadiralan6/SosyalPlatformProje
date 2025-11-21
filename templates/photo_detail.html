@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Fotoğraf Detay - SABİS{% endblock %}
+
+{% block extra_css %}
+<style>
+  .photo-tagger {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .photo-tagger img {
+    max-width: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .photo-tag-overlay {
+    position: absolute;
+    border: 2px solid var(--primary);
+    background: rgba(99, 102, 241, 0.2);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .saved-tag {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: rgba(99, 102, 241, 0.8);
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    transition: all 0.2s;
+  }
+
+  .saved-tag:hover {
+    background: var(--primary);
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+
+  .saved-tag::after {
+    content: attr(data-user);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    margin-bottom: 8px;
+  }
+
+  .saved-tag:hover::after {
+    opacity: 1;
+  }
+
+  .delete-tag-btn {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    background: var(--danger);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 18px;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 20;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .saved-tag:hover .delete-tag-btn {
+    display: block;
+  }
+
+  .delete-tag-btn:hover {
+    transform: scale(1.1);
+    background: #ef4444;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card mb-4">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2>{{ photo.caption or 'Fotoğraf' }}</h2>
+        <p class="text-muted">
+          <a href="{{ url_for('profile', user_id=photo.user.id) }}">{{ photo.user.first_name }} {{ photo.user.last_name
+            }}</a>
+          - {{ photo.uploaded_at.strftime('%d.%m.%Y %H:%M') }}
+        </p>
+      </div>
+      <a href="{{ url_for('photos') }}" class="btn btn-outline">Geri</a>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="photo-tagger" id="photoTagger">
+        <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}"
+          id="photoImage">
+
+        <!-- Existing tags -->
+        {% for tag in photo.tags %}
+        <div class="saved-tag" data-coords="{{ tag.coords }}"
+          data-user="{{ tag.tagged_user.first_name }} {{ tag.tagged_user.last_name }}" data-id="{{ tag.id }}"
+          onclick="window.location.href='{{ url_for('profile', user_id=tag.tagged_user.id) }}'">
+          {% if current_user.id == photo.user.id or current_user.id == tag.tagged_user.id %}
+          <div class="delete-tag-btn" onclick="event.stopPropagation(); deleteTag('{{ tag.id }}')">&times;</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Fotoğrafta Etiketle</h3>
+      <p class="text-muted">Etiketlemek için butona basın ve fotoğrafta bir yere tıklayın.</p>
+
+      <button id="startTagging" class="btn btn-primary btn-block">Etiketlemeye Başla</button>
+
+      <div class="mt-4">
+        <h4>Etiketlenen Kişiler</h4>
+        <ul id="taggedUsersList" style="list-style: none; padding: 0;">
+          {% if photo.tags %}
+          {% for tag in photo.tags %}
+          <li id="tag-list-item-{{ tag.id }}"
+            style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('profile', user_id=tag.tagged_user.id) }}">
+              {{ tag.tagged_user.first_name }} {{ tag.tagged_user.last_name }}
+            </a>
+            {% if current_user.id == photo.user.id or current_user.id == tag.tagged_user.id %}
+            <button class="btn btn-sm btn-danger" onclick="deleteTag('{{ tag.id }}')"
+              style="padding: 2px 8px; font-size: 12px; border-radius: 4px;">Sil</button>
+            {% endif %}
+          </li>
+          {% endfor %}
+          {% else %}
+          <li class="text-muted no-tags-msg">Henüz etiket yok</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tagging Modal -->
+<div id="taggingModal" class="modal">
+  <div class="modal-content"
+    style="width: 400px; max-width: 90%; margin: 15% auto; padding: 20px; border-radius: 8px; position: relative;">
+    <span class="close" onclick="closeTaggingModal()" style="position: absolute; right: 15px; top: 10px;">&times;</span>
+    <h4 class="mb-3 text-center">Kimi etiketliyorsun?</h4>
+
+    <input type="text" id="userSearchInput" class="form-control mb-3" placeholder="İsim ara..." onkeyup="filterUsers()">
+
+    <div class="user-list-container">
+      <ul id="userListSelect" class="user-select-list">
+        {% for user in users %}
+        <li class="user-select-item"
+          onclick="selectUser('{{ user.id }}', '{{ user.first_name }} {{ user.last_name }}')">
+          <div class="user-avatar-small">
+            {% if user.profile_image %}
+            <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" alt="Avatar">
+            {% else %}
+            <div class="avatar-placeholder"
+              style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">{{
+              user.first_name[0] }}{{ user.last_name[0] }}</div>
+            {% endif %}
+          </div>
+          <span>{{ user.first_name }} {{ user.last_name }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/photo-tagger.js') }}"></script>
+<script>
+  const photoId = parseInt('{{ photo.id }}');
+  initPhotoTagger(photoId);
+  renderSavedTags();
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Video Ekle - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">YouTube Video Ekle</h2>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.youtube_url.label(class="form-label") }}
+          {{ form.youtube_url(class="form-control", placeholder="https://www.youtube.com/watch?v=...") }}
+          {% if form.youtube_url.errors %}
+          <span class="text-danger">{{ form.youtube_url.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.title.label(class="form-label") }}
+          {{ form.title(class="form-control") }}
+          {% if form.title.errors %}
+          <span class="text-danger">{{ form.title.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.description.label(class="form-label") }}
+          {{ form.description(class="form-control", rows="4") }}
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('videos') }}" class="btn btn-outline">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.first_name }} {{ user.last_name }} - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card mb-4">
+    <div class="text-center">
+      {% if user.profile_photo %}
+      <img src="{{ url_for('static', filename='uploads/' + user.profile_photo) }}" alt="Profil" class="img-profile"
+        onclick="openModal(this.src)">
+      {% else %}
+      <div class="img-profile"
+        style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: white;">
+        {{ user.first_name[0] }}{{ user.last_name[0] }}
+      </div>
+      {% endif %}
+
+      <h1 class="mt-3">{{ user.first_name }} {{ user.last_name }}</h1>
+      <p class="text-muted">@{{ user.username }}</p>
+
+      {% if current_user.id == user.id %}
+      <a href="{{ url_for('edit_profile') }}" class="btn btn-primary mt-2">Profili Düzenle</a>
+      {% else %}
+      <a href="{{ url_for('send_message') }}?recipient={{ user.id }}" class="btn btn-primary mt-2">Mesaj Gönder</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Kişisel Bilgiler</h3>
+      <table style="width: 100%;">
+        <tr>
+          <td class="text-muted" style="padding: 0.5rem 0;">E-posta:</td>
+          <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+          <td class="text-muted" style="padding: 0.5rem 0;">Cinsiyet:</td>
+          <td>
+            {% if user.gender == 'male' %}Erkek
+            {% elif user.gender == 'female' %}Kadın
+            {% else %}Diğer{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td class="text-muted" style="padding: 0.5rem 0;">Doğum Yeri:</td>
+          <td>{{ user.birth_place or '-' }}</td>
+        </tr>
+        <tr>
+          <td class="text-muted" style="padding: 0.5rem 0;">Okul:</td>
+          <td>{{ user.school or '-' }}</td>
+        </tr>
+        <tr>
+          <td class="text-muted" style="padding: 0.5rem 0;">Hobiler:</td>
+          <td>{{ user.hobbies|hobby_display or '-' }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Hakkımda</h3>
+      <p>{{ user.about or 'Henüz bilgi eklenmemiş.' }}</p>
+
+      {% if user.current_location or user.current_activity %}
+      <h3 class="mt-3">Şu An</h3>
+      {% if user.current_location %}
+      <p><strong>Konum:</strong> {{ user.current_location }}</p>
+      {% endif %}
+      {% if user.current_activity %}
+      <p><strong>Ne Yapıyor:</strong> {{ user.current_activity }}</p>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if photos %}
+  <div class="card mt-4">
+    <h3>Fotoğraflar</h3>
+    <div class="grid grid-4 mt-3">
+      {% for photo in photos[:8] %}
+      <a href="{{ url_for('photo_detail', photo_id=photo.id) }}">
+        <img src="{{ url_for('static', filename='uploads/thumbnails/' + (photo.thumbnail or photo.filename)) }}"
+          alt="{{ photo.caption }}" class="img-thumbnail">
+      </a>
+      {% endfor %}
+    </div>
+    {% if photos|length > 8 %}
+    <div class="text-center mt-3">
+      <a href="{{ url_for('photos') }}" class="btn btn-outline">Tüm Fotoğrafları Gör</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if videos %}
+  <div class="card mt-4">
+    <h3>Videolar</h3>
+    <div class="grid grid-2 mt-3">
+      {% for video in videos[:4] %}
+      <div>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/{{ video.youtube_id }}" allowfullscreen></iframe>
+        </div>
+        <h4 class="mt-2">{{ video.title }}</h4>
+      </div>
+      {% endfor %}
+    </div>
+    {% if videos|length > 4 %}
+    <div class="text-center mt-3">
+      <a href="{{ url_for('videos') }}" class="btn btn-outline">Tüm Videoları Gör</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Profile Photo Modal -->
+<div id="profilePhotoModal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="fullProfilePhoto">
+  <div id="caption"></div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    object-fit: contain;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+  }
+
+  @keyframes zoom {
+    from {
+      transform: scale(0)
+    }
+
+    to {
+      transform: scale(1)
+    }
+  }
+
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .img-profile {
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .img-profile:hover {
+    opacity: 0.7;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openModal(src) {
+    var modal = document.getElementById("profilePhotoModal");
+    var modalImg = document.getElementById("fullProfilePhoto");
+    modal.style.display = "block";
+    modalImg.src = src;
+  }
+
+  function closeModal() {
+    var modal = document.getElementById("profilePhotoModal");
+    modal.style.display = "none";
+  }
+
+  // Close modal when clicking outside of the image
+  window.onclick = function (event) {
+    var modal = document.getElementById("profilePhotoModal");
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+</script>
+{% endblock %}

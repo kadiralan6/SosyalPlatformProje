@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card mb-4">
+    <a href="{{ url_for('forum') }}" class="btn btn-outline mb-3">← Forum'a Dön</a>
+
+    <h1>{{ post.title }}</h1>
+    <p class="text-muted">
+      <a href="{{ url_for('profile', user_id=post.author.id) }}">{{ post.author.first_name }} {{ post.author.last_name
+        }}</a>
+      - {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}
+    </p>
+    <div
+      style="padding: 1rem 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin: 1rem 0;">
+      <p style="white-space: pre-wrap;">{{ post.content }}</p>
+    </div>
+  </div>
+
+  <!-- Replies -->
+  {% if post.replies %}
+  <div class="card mb-4">
+    <h3>Yanıtlar ({{ post.replies|length }})</h3>
+    {% for reply in post.replies %}
+    <div style="padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-top: 1rem;">
+      <p class="text-muted">
+        <a href="{{ url_for('profile', user_id=reply.author.id) }}">{{ reply.author.first_name }} {{
+          reply.author.last_name }}</a>
+        - {{ reply.created_at.strftime('%d.%m.%Y %H:%M') }}
+      </p>
+      <p style="white-space: pre-wrap;">{{ reply.content }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Reply Form -->
+  <div class="card">
+    <h3>Yanıt Yaz</h3>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.content(class="form-control", rows="5", placeholder="Yanıtınızı yazın...") }}
+        {% if form.content.errors %}
+        <span class="text-danger">{{ form.content.errors[0] }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

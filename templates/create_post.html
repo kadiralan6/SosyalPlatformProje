@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Yeni Mesaj - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">Yeni Forum Mesajı</h2>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.title.label(class="form-label") }}
+          {{ form.title(class="form-control") }}
+          {% if form.title.errors %}
+          <span class="text-danger">{{ form.title.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.content.label(class="form-label") }}
+          {{ form.content(class="form-control", rows="8") }}
+          {% if form.content.errors %}
+          <span class="text-danger">{{ form.content.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('forum') }}" class="btn btn-outline">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

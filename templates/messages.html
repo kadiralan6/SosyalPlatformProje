@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Mesajlar - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card mb-4">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 class="card-title">Mesajlarım</h2>
+      <a href="{{ url_for('send_message') }}" class="btn btn-primary">Yeni Mesaj</a>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- Received Messages -->
+    <div class="card">
+      <h3>Gelen Mesajlar ({{ received|length }})</h3>
+      {% if received %}
+      <div style="margin-top: 1rem;">
+        {% for message in received %}
+        <div style="padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <h4>
+                <a href="{{ url_for('view_message', message_id=message.id) }}">
+                  {{ message.subject or 'Mesaj' }}
+                  {% if not message.is_read %}
+                  <span class="text-primary">●</span>
+                  {% endif %}
+                </a>
+              </h4>
+              <p class="text-muted">
+                <a href="{{ url_for('profile', user_id=message.sender.id) }}">
+                  {{ message.sender.first_name }} {{ message.sender.last_name }}
+                </a>
+              </p>
+            </div>
+            <span class="text-muted" style="font-size: 0.875rem;">
+              {{ message.created_at.strftime('%d.%m.%Y') }}
+            </span>
+          </div>
+          <p>{{ message.content[:100] }}{% if message.content|length > 100 %}...{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mt-3">Gelen mesaj yok</p>
+      {% endif %}
+    </div>
+
+    <!-- Sent Messages -->
+    <div class="card">
+      <h3>Gönderilen Mesajlar ({{ sent|length }})</h3>
+      {% if sent %}
+      <div style="margin-top: 1rem;">
+        {% for message in sent %}
+        <div style="padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <h4>
+                <a href="{{ url_for('view_message', message_id=message.id) }}">
+                  {{ message.subject or 'Mesaj' }}
+                </a>
+              </h4>
+              <p class="text-muted">
+                <a href="{{ url_for('profile', user_id=message.recipient.id) }}">
+                  {{ message.recipient.first_name }} {{ message.recipient.last_name }}
+                </a>
+              </p>
+            </div>
+            <span class="text-muted" style="font-size: 0.875rem;">
+              {{ message.created_at.strftime('%d.%m.%Y') }}
+            </span>
+          </div>
+          <p>{{ message.content[:100] }}{% if message.content|length > 100 %}...{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted mt-3">Gönderilen mesaj yok</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

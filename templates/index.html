@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <!-- Hero Section -->
+  <div class="card text-center mb-4">
+    <h1
+      style="background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      SABİS Platform'a Hoş Geldiniz
+    </h1>
+    <p class="text-secondary" style="font-size: 1.25rem;">
+      Üniversite Sınıfı Sosyal Ağ ve Mezunlar Platformu
+    </p>
+
+    {% if not current_user.is_authenticated %}
+    <div class="mt-3">
+      <a href="{{ url_for('register') }}" class="btn btn-primary" style="margin-right: 1rem;">Kayıt Ol</a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline">Giriş Yap</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Features -->
+  <div class="grid grid-3 mb-4">
+    <div class="card">
+      <h3>👥 Kişiler</h3>
+      <p class="text-muted">Sınıf arkadaşlarınızla bağlantıda kalın, profilleri inceleyin.</p>
+    </div>
+    <div class="card">
+      <h3>📸 Fotoğraflar</h3>
+      <p class="text-muted">Anılarınızı paylaşın, fotoğraflarda arkadaşlarınızı etiketleyin.</p>
+    </div>
+    <div class="card">
+      <h3>🎥 Videolar</h3>
+      <p class="text-muted">YouTube videolarınızı paylaşın ve izleyin.</p>
+    </div>
+    <div class="card">
+      <h3>💬 Forum</h3>
+      <p class="text-muted">Ortak mesajlaşma alanında tartışmalara katılın.</p>
+    </div>
+    <div class="card">
+      <h3>✉️ Mesajlaşma</h3>
+      <p class="text-muted">Arkadaşlarınızla özel mesajlaşın.</p>
+    </div>
+    <div class="card">
+      <h3>🗺️ Harita</h3>
+      <p class="text-muted">Herkesin nerede olduğunu harita üzerinde görün.</p>
+    </div>
+  </div>
+
+  <!-- Recent Forum Posts -->
+  {% if current_user.is_authenticated and recent_posts %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Son Forum Mesajları</h2>
+    </div>
+    <div class="card-body">
+      {% for post in recent_posts %}
+      <div style="padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <h4><a href="{{ url_for('view_post', post_id=post.id) }}">{{ post.title }}</a></h4>
+        <p class="text-muted">
+          {{ post.author.first_name }} {{ post.author.last_name }} -
+          {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}
+        </p>
+        <p>{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
+      </div>
+      {% endfor %}
+      <div class="text-center mt-3">
+        <a href="{{ url_for('forum') }}" class="btn btn-primary">Tüm Mesajları Gör</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

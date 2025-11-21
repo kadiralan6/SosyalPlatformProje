@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Fotoğraf Yükle - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">Fotoğraf Yükle</h2>
+    </div>
+
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.photo.label(class="form-label") }}
+          <label for="photo" class="form-file" style="display: block;">
+            {{ form.photo(onchange="document.getElementById('file-name-upload').textContent = this.files[0].name") }}
+            <p id="file-name-upload" class="text-muted" style="margin: 0;">Fotoğraf seçin (JPG, PNG, GIF)</p>
+          </label>
+          {% if form.photo.errors %}
+          <span class="text-danger">{{ form.photo.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.caption.label(class="form-label") }}
+          {{ form.caption(class="form-control") }}
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('photos') }}" class="btn btn-outline">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

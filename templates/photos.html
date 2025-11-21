@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Fotoğraflar - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card mb-4">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 class="card-title">Fotoğraf Galerisi</h2>
+        <p class="text-muted">{{ photos|length }} fotoğraf</p>
+      </div>
+      <a href="{{ url_for('upload_photo') }}" class="btn btn-primary">Fotoğraf Yükle</a>
+    </div>
+  </div>
+
+  <div class="grid grid-4">
+    {% for photo in photos %}
+    <div class="card">
+      <a href="{{ url_for('photo_detail', photo_id=photo.id) }}">
+        <img src="{{ url_for('static', filename='uploads/thumbnails/' + (photo.thumbnail or photo.filename)) }}"
+          alt="{{ photo.caption }}"
+          style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-md);">
+      </a>
+      <div class="mt-2">
+        <p class="text-muted">{{ photo.user.first_name }} {{ photo.user.last_name }}</p>
+        {% if photo.caption %}
+        <p>{{ photo.caption[:50] }}{% if photo.caption|length > 50 %}...{% endif %}</p>
+        {% endif %}
+        <p class="text-muted" style="font-size: 0.875rem;">{{ photo.uploaded_at.strftime('%d.%m.%Y') }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

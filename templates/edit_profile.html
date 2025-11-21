@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Profili Düzenle - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">Profili Düzenle</h2>
+    </div>
+
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="grid grid-2">
+          <div class="form-group">
+            {{ form.first_name.label(class="form-label") }}
+            {{ form.first_name(class="form-control") }}
+          </div>
+
+          <div class="form-group">
+            {{ form.last_name.label(class="form-label") }}
+            {{ form.last_name(class="form-control") }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.gender.label(class="form-label") }}
+          <div class="form-radio">
+            {% for subfield in form.gender %}
+            <label class="radio-option">
+              {{ subfield }}
+              {{ subfield.label.text }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="form-group">
+            {{ form.birth_place.label(class="form-label") }}
+            {{ form.birth_place(class="form-control") }}
+          </div>
+
+          <div class="form-group">
+            {{ form.school.label(class="form-label") }}
+            {{ form.school(class="form-control") }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.hobbies.label(class="form-label") }}
+          {{ form.hobbies(class="form-control") }}
+          <p class="text-muted" style="font-size: 0.875rem; margin-top: 0.5rem;">Hobilerinizi virgülle ayırarak yazın
+            (örn: Kitap okuma, Spor, Müzik, Seyahat)</p>
+        </div>
+
+        <div class="form-group">
+          {{ form.about.label(class="form-label") }}
+          {{ form.about(class="form-control", rows="4") }}
+        </div>
+
+        <h3 class="mt-4 mb-3">Aktivite Bilgileri</h3>
+
+        <div class="grid grid-2">
+          <div class="form-group">
+            {{ form.current_location.label(class="form-label") }}
+            {{ form.current_location(class="form-control") }}
+          </div>
+
+          <div class="form-group">
+            {{ form.current_activity.label(class="form-label") }}
+            {{ form.current_activity(class="form-control") }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.profile_photo.label(class="form-label") }}
+          <label for="profile_photo" class="form-file" style="display: block;">
+            {{ form.profile_photo(onchange="document.getElementById('file-name').textContent = this.files[0].name") }}
+            <p id="file-name" class="text-muted" style="margin: 0;">Yeni profil fotoğrafı seçin</p>
+          </label>
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('profile', user_id=current_user.id) }}" class="btn btn-outline">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

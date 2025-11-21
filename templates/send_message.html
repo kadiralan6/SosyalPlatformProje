@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Mesaj Gönder - SABİS{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+  <div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">Yeni Mesaj Gönder</h2>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.recipient.label(class="form-label") }}
+          {{ form.recipient(class="form-control") }}
+          {% if form.recipient.errors %}
+          <span class="text-danger">{{ form.recipient.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          {{ form.subject.label(class="form-label") }}
+          {{ form.subject(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ form.content.label(class="form-label") }}
+          {{ form.content(class="form-control", rows="8") }}
+          {% if form.content.errors %}
+          <span class="text-danger">{{ form.content.errors[0] }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group text-center mt-4">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('messages') }}" class="btn btn-outline">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
