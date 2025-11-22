@@ -1,5 +1,7 @@
 import os
 import re
+import cloudinary
+import cloudinary.uploader
 from PIL import Image
 from werkzeug.utils import secure_filename
 from config import Config
@@ -9,34 +11,25 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
-def save_uploaded_file(file, upload_folder):
-    """Save uploaded file and return filename"""
+def save_uploaded_file(file, folder="profile_photos"):
+    """Upload file to Cloudinary and return public_id"""
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        # Add timestamp to avoid conflicts
-        name, ext = os.path.splitext(filename)
-        from datetime import datetime
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{name}_{timestamp}{ext}"
-        
-        filepath = os.path.join(upload_folder, filename)
-        file.save(filepath)
-        return filename
+        try:
+            # Upload to Cloudinary
+            result = cloudinary.uploader.upload(
+                file,
+                folder=folder,
+                transformation=[
+                    {'width': 800, 'height': 800, 'crop': 'limit'},
+                    {'quality': 'auto'}
+                ]
+            )
+            # Return the public_id (Cloudinary's unique identifier)
+            return result['public_id']
+        except Exception as e:
+            print(f"Error uploading to Cloudinary: {e}")
+            return None
     return None
-
-def create_thumbnail(image_path, thumbnail_path, size=None):
-    """Create thumbnail from image"""
-    if size is None:
-        size = Config.THUMBNAIL_SIZE
-    
-    try:
-        with Image.open(image_path) as img:
-            img.thumbnail(size, Image.Resampling.LANCZOS)
-            img.save(thumbnail_path)
-        return True
-    except Exception as e:
-        print(f"Error creating thumbnail: {e}")
-        return False
 
 def extract_youtube_id(url):
     """Extract YouTube video ID from URL"""

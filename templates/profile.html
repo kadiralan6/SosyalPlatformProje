@@ -7,11 +7,11 @@
   <div class="card mb-4">
     <div class="text-center">
       {% if user.profile_photo %}
-      <img src="{{ url_for('static', filename='uploads/' + user.profile_photo) }}" alt="Profil" class="img-profile"
-        onclick="openModal(this.src)">
+      <img src="{{ user.profile_photo|cloudinary_url('profile') }}" alt="Profil" class="img-profile" id="profilePhoto"
+        onclick="openModal()">
       {% else %}
       <div class="img-profile"
-        style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 4rem; color: white;">
+        style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 5rem; color: white;">
         {{ user.first_name[0] }}{{ user.last_name[0] }}
       </div>
       {% endif %}
@@ -80,8 +80,7 @@
     <div class="grid grid-4 mt-3">
       {% for photo in photos[:8] %}
       <a href="{{ url_for('photo_detail', photo_id=photo.id) }}">
-        <img src="{{ url_for('static', filename='uploads/thumbnails/' + (photo.thumbnail or photo.filename)) }}"
-          alt="{{ photo.caption }}" class="img-thumbnail">
+        <img src="{{ photo.filename|cloudinary_url('thumbnail') }}" alt="{{ photo.caption }}" class="img-thumbnail">
       </a>
       {% endfor %}
     </div>

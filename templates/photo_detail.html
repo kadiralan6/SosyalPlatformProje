@@ -112,8 +112,7 @@
   <div class="grid grid-2">
     <div class="card">
       <div class="photo-tagger" id="photoTagger">
-        <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}"
-          id="photoImage">
+        <img src="{{ photo.filename|cloudinary_url }}" alt="{{ photo.caption }}" id="photo-image">
 
         <!-- Existing tags -->
         {% for tag in photo.tags %}

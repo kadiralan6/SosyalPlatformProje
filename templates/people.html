@@ -14,8 +14,8 @@
     <div class="card">
       <div class="text-center">
         {% if user.profile_photo %}
-        <img src="{{ url_for('static', filename='uploads/thumbnails/' + user.profile_photo) }}"
-          alt="{{ user.first_name }}" class="img-thumbnail">
+        <img src="{{ user.profile_photo|cloudinary_url('thumbnail') }}" alt="{{ user.first_name }}"
+          class="img-thumbnail">
         {% else %}
         <div class="img-thumbnail"
           style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; margin: 0 auto;">

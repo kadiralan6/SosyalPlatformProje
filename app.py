@@ -1,4 +1,6 @@
 import os
+import cloudinary
+import cloudinary.api
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
@@ -6,7 +8,7 @@ from config import Config
 from models import db, User, Photo, PhotoTag, Video, ForumPost, ForumReply, Message, Location
 from forms import (RegistrationForm, LoginForm, ProfileForm, PhotoUploadForm, 
                    VideoForm, ForumPostForm, ForumReplyForm, MessageForm, LocationForm)
-from utils import save_uploaded_file, create_thumbnail, extract_youtube_id, get_youtube_embed_url
+from utils import save_uploaded_file, extract_youtube_id, get_youtube_embed_url
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,13 +20,16 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Bu sayfaya erişmek için giriş yapmalısınız.'
 
+# Initialize Cloudinary
+cloudinary.config(
+    cloud_name=app.config['CLOUDINARY_CLOUD_NAME'],
+    api_key=app.config['CLOUDINARY_API_KEY'],
+    api_secret=app.config['CLOUDINARY_API_SECRET']
+)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-# Ensure upload folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails'), exist_ok=True)
 
 # Create database tables on startup (for production deployment)
 with app.app_context():
@@ -59,15 +64,17 @@ def register():
         )
         user.set_password(form.password.data)
         
-        # Handle profile photo
+        # Handle profile photo upload with Cloudinary
         if form.profile_photo.data:
-            filename = save_uploaded_file(form.profile_photo.data, app.config['UPLOAD_FOLDER'])
-            if filename:
-                user.profile_photo = filename
-                # Create thumbnail
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails', filename)
-                create_thumbnail(image_path, thumbnail_path)
+            photo_file = form.profile_photo.data
+            # Assuming save_uploaded_file is updated to handle Cloudinary upload
+            # and returns the public_id
+            public_id = save_uploaded_file(photo_file, folder="profile_photos")
+            if public_id:
+                user.profile_photo = public_id
+            else:
+                flash('Geçersiz dosya formatı veya yükleme hatası.', 'danger')
+                return render_template('register.html', form=form) # Stay on register page
         
         db.session.add(user)
         db.session.commit()
@@ -131,21 +138,11 @@ def edit_profile():
         current_user.current_activity = form.current_activity.data
         
         # Handle profile photo
-        # Handle profile photo
         if form.profile_photo.data:
             try:
-                filename = save_uploaded_file(form.profile_photo.data, app.config['UPLOAD_FOLDER'])
-                if filename:
-                    current_user.profile_photo = filename
-                    
-                    # Create thumbnail
-                    image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails', filename)
-                    
-                    # Ensure thumbnails directory exists
-                    os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
-                    
-                    create_thumbnail(image_path, thumbnail_path)
+                public_id = save_uploaded_file(form.profile_photo.data, folder="profile_photos")
+                if public_id:
+                    current_user.profile_photo = public_id
                 else:
                     flash('Profil fotoğrafı kaydedilemedi. Lütfen dosya formatını kontrol edin.', 'warning')
             except Exception as e:
@@ -192,24 +189,13 @@ def upload_photo():
     
     if form.validate_on_submit():
         try:
-            filename = save_uploaded_file(form.photo.data, app.config['UPLOAD_FOLDER'])
-            if filename:
+            public_id = save_uploaded_file(form.photo.data, folder="photos")
+            if public_id:
                 photo = Photo(
                     user_id=current_user.id,
-                    filename=filename,
+                    filename=public_id,
                     caption=form.caption.data
                 )
-                
-                # Create thumbnail
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                thumbnail_filename = f"thumb_{filename}"
-                thumbnail_path = os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails', thumbnail_filename)
-                
-                # Ensure thumbnails directory exists
-                os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
-                
-                if create_thumbnail(image_path, thumbnail_path):
-                    photo.thumbnail = thumbnail_filename
                 
                 db.session.add(photo)
                 db.session.commit()
@@ -457,6 +443,34 @@ def hobby_display(hobbies_str):
     if not hobbies_str:
         return ''
     return hobbies_str
+
+@app.template_filter('cloudinary_url')
+def cloudinary_url_filter(public_id, transformation=None):
+    """Generate Cloudinary URL from public_id"""
+    if not public_id:
+        return None
+    
+    import cloudinary.utils
+    
+    # Default transformation for thumbnails
+    if transformation == 'thumbnail':
+        return cloudinary.utils.cloudinary_url(
+            public_id,
+            width=150,
+            height=150,
+            crop='fill',
+            quality='auto'
+        )[0]
+    elif transformation == 'profile':
+        return cloudinary.utils.cloudinary_url(
+            public_id,
+            width=400,
+            height=400,
+            crop='fill',
+            quality='auto'
+        )[0]
+    else:
+        return cloudinary.utils.cloudinary_url(public_id)[0]
 
 if __name__ == '__main__':
     with app.app_context():
