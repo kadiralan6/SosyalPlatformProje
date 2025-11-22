@@ -210,6 +210,34 @@ def upload_photo():
     
     return render_template('upload_photo.html', form=form)
 
+@app.route('/photos/<int:photo_id>/delete', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    """Delete photo"""
+    photo = Photo.query.get_or_404(photo_id)
+    
+    # Check permission
+    if photo.user_id != current_user.id:
+        flash('Bu işlem için yetkiniz yok.', 'danger')
+        return redirect(url_for('photo_detail', photo_id=photo_id))
+    
+    try:
+        # Delete from Cloudinary
+        if photo.filename:
+            import cloudinary.uploader
+            cloudinary.uploader.destroy(photo.filename)
+            
+        # Delete from database
+        db.session.delete(photo)
+        db.session.commit()
+        
+        flash('Fotoğraf başarıyla silindi.', 'success')
+        return redirect(url_for('photos'))
+    except Exception as e:
+        print(f"Delete Error: {str(e)}")
+        flash('Fotoğraf silinirken bir hata oluştu.', 'danger')
+        return redirect(url_for('photo_detail', photo_id=photo_id))
+
 @app.route('/photos/<int:photo_id>')
 @login_required
 def photo_detail(photo_id):
