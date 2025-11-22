@@ -38,6 +38,7 @@ Projenizin kodlarını GitHub'a yüklemeniz gerekiyor.
 4. **Advanced** bölümüne tıklayın ve **Environment Variables** ekleyin:
    - `Key`: `DATABASE_URL` | `Value`: (Kopyaladığınız Internal Database URL)
    - `Key`: `SECRET_KEY` | `Value`: (Rastgele zor bir şifre yazın)
+   - `Key`: `PYTHON_VERSION` | `Value`: `3.11.5`
 5. **Create Web Service** butonuna tıklayın.
 
 Tebrikler! Birkaç dakika içinde siteniz yayına girecek ve size verilen URL üzerinden erişebileceksiniz.
