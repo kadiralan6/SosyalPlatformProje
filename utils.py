@@ -13,23 +13,32 @@ def allowed_file(filename):
 
 def save_uploaded_file(file, folder="profile_photos"):
     """Upload file to Cloudinary and return public_id"""
-    if file and allowed_file(file.filename):
-        try:
-            # Upload to Cloudinary
-            result = cloudinary.uploader.upload(
-                file,
-                folder=folder,
-                transformation=[
-                    {'width': 800, 'height': 800, 'crop': 'limit'},
-                    {'quality': 'auto'}
-                ]
-            )
-            # Return the public_id (Cloudinary's unique identifier)
-            return result['public_id']
-        except Exception as e:
-            print(f"Error uploading to Cloudinary: {e}")
-            return None
-    return None
+    if not file:
+        print("Error: No file provided")
+        return None
+        
+    if not allowed_file(file.filename):
+        print(f"Error: File extension not allowed for {file.filename}")
+        return None
+        
+    try:
+        # Upload to Cloudinary
+        result = cloudinary.uploader.upload(
+            file,
+            folder=folder,
+            transformation=[
+                {'width': 800, 'height': 800, 'crop': 'limit'},
+                {'quality': 'auto'}
+            ]
+        )
+        # Return the public_id (Cloudinary's unique identifier)
+        print(f"Successfully uploaded to Cloudinary: {result['public_id']}")
+        return result['public_id']
+    except Exception as e:
+        print(f"Error uploading to Cloudinary: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 def extract_youtube_id(url):
     """Extract YouTube video ID from URL"""
