@@ -26,6 +26,10 @@ def load_user(user_id):
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'thumbnails'), exist_ok=True)
 
+# Create database tables on startup (for production deployment)
+with app.app_context():
+    db.create_all()
+
 # Routes
 
 @app.route('/')
