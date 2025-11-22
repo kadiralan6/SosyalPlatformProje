@@ -500,6 +500,49 @@ def cloudinary_url_filter(public_id, transformation=None):
     else:
         return cloudinary.utils.cloudinary_url(public_id)[0]
 
+# --- ADMIN ROUTES (Temporary) ---
+@app.route('/admin/delete-user/<username>')
+def admin_delete_user(username):
+    """Delete a user by username (Protected by key)"""
+    key = request.args.get('key')
+    if key != app.config['SECRET_KEY']: # Use SECRET_KEY as admin password for simplicity
+        return "Unauthorized", 403
+    
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return f"User {username} not found", 404
+    
+    try:
+        # 1. Delete Cloudinary images (Profile photo)
+        if user.profile_photo:
+            import cloudinary.uploader
+            cloudinary.uploader.destroy(user.profile_photo)
+            
+        # 2. Delete User Photos from Cloudinary
+        for photo in user.photos:
+            if photo.filename:
+                cloudinary.uploader.destroy(photo.filename)
+        
+        # 3. Delete associated data manually (if not handled by cascade)
+        # Delete messages sent/received by user
+        Message.query.filter((Message.sender_id == user.id) | (Message.recipient_id == user.id)).delete()
+        
+        # Delete photo tags where user is tagged
+        PhotoTag.query.filter_by(tagged_user_id=user.id).delete()
+        
+        # Delete forum replies by user
+        ForumReply.query.filter_by(user_id=user.id).delete()
+        
+        # 4. Delete User (Cascade will handle photos, videos, posts, location)
+        db.session.delete(user)
+        db.session.commit()
+        
+        return f"User {username} and all associated data deleted successfully."
+        
+    except Exception as e:
+        db.session.rollback()
+        return f"Error deleting user: {str(e)}", 500
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
