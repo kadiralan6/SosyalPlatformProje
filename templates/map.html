@@ -90,10 +90,12 @@
         btn.disabled = true;
 
         // Save location
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         fetch('/map/update', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
           },
           body: JSON.stringify({
             latitude: lat,
